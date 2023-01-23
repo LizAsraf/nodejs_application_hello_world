@@ -49,7 +49,7 @@ pipeline {
                 script{                                
                     echo "no need end to end test"
                     sh """
-                        docker compose down
+                        docker rm -f app
                     """                    
                 }
             }
