@@ -82,7 +82,9 @@ pipeline {
                     echo "pushing..."
                     // sh "docker push 644435390668.dkr.ecr.us-west-2.amazonaws.com/blogapp:${newtag}"
                     sh "git tag -a v${newtag} -m 'my new version ${newtag}'"                    
-                    sh "git push --tag"
+                    withCredentials([sshUserPrivateKey(credentialsId: 'gitlab-jenkins-8-11', keyFileVariable: '')]) {
+                        sh "git push --tag"
+                    }
                     RELEASE_VERSION = newtag
                 }
             }
