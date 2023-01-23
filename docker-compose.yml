@@ -6,7 +6,7 @@ volumes:
 services: 
   app:
     container_name: app
-    image: app_node:1.0.0
+    image: app_node:latest
     networks:
       - jenk_gitlab_net
       - node_compose
