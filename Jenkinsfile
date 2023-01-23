@@ -29,7 +29,7 @@ pipeline {
                     timeout(5) {
                         sh """
                             docker build --tag app_node:latest --file Dockerfile .
-                            docker compose up -d
+                            docker run -d --network jenk_gitlab_net --name app app_node:latest
                         """
                     }
                     timeout(1) {
