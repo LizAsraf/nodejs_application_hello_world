@@ -1,11 +1,11 @@
 pipeline {
     agent any
-    tools {
-        git 'Default'
-    }
-    triggers {
-        gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
-    }
+    // tools {
+    //     git 'Default'
+    // }
+    // triggers {
+    //     gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
+    // }
     environment {
         RELEASE_VERSION = ''
     }
@@ -81,9 +81,9 @@ pipeline {
                     // sh "docker tag blogapp:latest 644435390668.dkr.ecr.us-west-2.amazonaws.com/blogapp:${newtag}"
                     echo "pushing..."
                     // sh "docker push 644435390668.dkr.ecr.us-west-2.amazonaws.com/blogapp:${newtag}"
-                    sh "git tag -a v${newtag} -m 'my new version ${newtag}'"                    
-                    withCredentials([sshUserPrivateKey(credentialsId: 'gitlab-jenkins-8-11', keyFileVariable: '')]) {
-                        sh "git push --tag"
+                    sh "git tag -a ${newtag} -m 'my new version ${newtag}'"                    
+                    sshagent(credentials: ['newjenkins']) {
+                      sh "git push --tag"
                     }
                     RELEASE_VERSION = newtag
                 }
