@@ -57,7 +57,7 @@ pipeline {
                         ).trim()   
                     echo "$L_TAG"
                     if (L_TAG == ''){
-                        newtag="1.0.0"
+                        newtag="v1.0.0"
                         echo "the new tag is $newtag" 
                     }
                     else{
@@ -85,9 +85,9 @@ pipeline {
             when { branch "main" }
             steps {                   
                 sh "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml"          
-                sshagent(credentials: ['newjenkins']) {
+                sshagent(credentials: ['ec77bf52-f9b7-4b19-8b77-566333319f83']) {
                     sh """
-                        ssh ubuntu@52.205.92.105 "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml; docker-compose up"
+                        ssh ubuntu@35.175.118.229 "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml; docker-compose up"
                     """
                 }
             }
