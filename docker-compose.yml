@@ -1,8 +1,5 @@
 version: "3.9"
 
-volumes:
-  mongodb:
-
 services: 
   app:
     container_name: app

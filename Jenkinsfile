@@ -1,25 +1,18 @@
 pipeline {
     agent any
-    // tools {
-    //     git 'Default'
-    // }
-    // triggers {
-    //     gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
-    // }
+    tools {
+        git 'Default'
+    }
     environment {
         RELEASE_VERSION = ''
     }
     stages {        
         stage ('checkout'){
             steps{
-                script{
-                    deleteDir()
-                    // checkout([$class: 'GitSCM', branches: [[name: '*/main']], \
-                    // extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-jenkins-8-11', url: 'git@github.com:LizAsraf/nodejs_application_hello_world.git']]])
-                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/LizAsraf/nodejs_application_hello_world'],
-                    extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-jenkins-8-11', url: 'git@github.com:LizAsraf/nodejs_application_hello_world.git']]])
-                    sh 'git fetch --all --tags'
-                } 
+                deleteDir()
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/LizAsraf/nodejs_application_hello_world'],
+                extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-jenkins-8-11', url: 'git@github.com:LizAsraf/nodejs_application_hello_world.git']]])
+                sh 'git fetch --all --tags'
             }
         }
 
@@ -45,13 +38,9 @@ pipeline {
                     branch "main" ; branch pattern: "feature/.*", comparator: "REGEXP"
                 }
             }            
-            steps {
-                script{                                
-                    echo "no need end to end test"
-                    sh """
-                        docker rm -f app
-                    """                    
-                }
+            steps {                               
+                echo "no need end to end test"
+                sh "docker rm -f app"                    
             }
         }
 
@@ -76,11 +65,11 @@ pipeline {
                         echo "the new tag is $newtag"   
                     }
                     echo "login into ecr..."
-                    // sh "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 644435390668.dkr.ecr.us-west-2.amazonaws.com"
+                    sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 118341628787.dkr.ecr.us-east-1.amazonaws.com"
                     echo "taggging image"
-                    // sh "docker tag blogapp:latest 644435390668.dkr.ecr.us-west-2.amazonaws.com/blogapp:${newtag}"
+                    sh "docker tag app_node:latest 118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${newtag}"
                     echo "pushing..."
-                    // sh "docker push 644435390668.dkr.ecr.us-west-2.amazonaws.com/blogapp:${newtag}"
+                    sh "docker push 118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${newtag}"
                     sh "git tag -a ${newtag} -m 'my new version ${newtag}'"                    
                     sshagent(credentials: ['newjenkins']) {
                       sh "git push --tag"
@@ -92,21 +81,17 @@ pipeline {
         // need to change the image name in the app helm charts with the argo cd repository {{with credentials}}
         //need also to change the version in the helm chart
 
-        // stage ('Deploy') {
-        //     when { branch "main" }
-        //     steps {
-        //         script{
-        //             checkout([$class: 'GitSCM', branches: [[name: '*/main']], \
-        //             extensions: [], userRemoteConfigs: [[credentialsId: 'gitlab-jenkins-8-11', url: 'git@gitlab.com:liz.asraf/argo-cd.git']]])                        
-        //             sh """cd blogapp
-        //             sed -i '11s/version: .*/version: ${RELEASE_VERSION}/g' Chart.yaml
-        //             sed -i '11s/tag: .*/tag: "${RELEASE_VERSION}"/g' values.yaml
-        //             git commit -am "version ${RELEASE_VERSION} updated"
-        //             git push origin HEAD:main
-        //             """           
-        //         }
-        //     }
-        // }
+        stage ('Deploy') {
+            when { branch "main" }
+            steps {                   
+                sh "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml"          
+                sshagent(credentials: ['newjenkins']) {
+                    sh """
+                        ssh ubuntu@52.205.92.105 "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml; docker-compose up"
+                    """
+                }
+            }
+        }
     }
     post {
         always {
