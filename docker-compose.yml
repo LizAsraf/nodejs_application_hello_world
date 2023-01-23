@@ -1,0 +1,32 @@
+version: "3.9"
+
+volumes:
+  mongodb:
+
+services: 
+  app:
+    container_name: app
+    image: app_node:1.0.0
+    networks:
+      - jenk_gitlab_net
+      - node_compose
+    environment:
+      PORT: ${PORT}
+  
+  rev_prox:
+    image: nginx:latest
+    container_name: reverse_proxy
+    networks:
+      - node_compose
+    ports:
+      - 80:80
+    restart: always
+    volumes:
+      - "${CONF_FILE_LOCATION}:/etc/nginx/conf.d/default.conf"
+
+networks:
+  jenk_gitlab_net:
+    name: jenk_gitlab_net
+    external: true
+  node_compose:
+    name: node_compose   
