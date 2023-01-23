@@ -83,11 +83,13 @@ pipeline {
 
         stage ('Deploy') {
             when { branch "main" }
-            steps {                   
-                sh "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml"          
+            steps {    
+                sh "ls -alF"               
+                // sh "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml"          
                 sshagent(credentials: ['ec77bf52-f9b7-4b19-8b77-566333319f83']) {
                     sh """
-                        ssh ubuntu@35.175.118.229 "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml; docker-compose up"
+                        cd application
+                        ssh -i "~/.ssh/lizasraf.pem" ubuntu@35.175.118.229 "sed -i '6 s/app_node:latest/118341628787.dkr.ecr.us-east-1.amazonaws.com\\/nodejs_hello_world:${RELEASE_VERSION}/' docker-compose.yml; docker compose up"
                     """
                 }
             }
